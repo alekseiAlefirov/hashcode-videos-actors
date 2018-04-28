@@ -13,7 +13,12 @@ object Domain{
 
     case class Endpoint(dataCenterLatency: Latency, connections: Map[Id, Latency])
 
-    case class Request(videoId: Id, endpointId: Id, times: Int)
+    case class Request(videoId: Id, endpointId: Id, times: Int) {
+
+      def +(that: Request): Request = {
+        Request(videoId, endpointId, times + that.times)
+      }
+    }
 
     case class Situation(
       //dataCenter: DataCenter,

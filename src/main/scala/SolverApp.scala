@@ -1,7 +1,7 @@
 import akka.actor.{ActorSystem, PoisonPill, Props}
 import gui.SolverStage
 import io.Parser._
-import actors.ApplicationActor
+import actors.UiActor
 
 
 import scalafx.application.JFXApp
@@ -13,7 +13,7 @@ object SolverApp extends JFXApp {
   val actorSystem = ActorSystem("solver-system")
 
   val appActor = actorSystem.actorOf(
-    ApplicationActor.props(myStage, parameters.raw.toArray).withDispatcher("scalafx-dispatcher"),
+    UiActor.props(myStage, parameters.raw.toArray).withDispatcher("scalafx-dispatcher"),
     "app-actor"
   )
 

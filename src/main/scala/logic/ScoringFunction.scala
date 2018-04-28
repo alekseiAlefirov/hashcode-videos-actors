@@ -9,7 +9,7 @@ object ScoringFunction{
     import situation._
 
 
-    val totalGain = situation.requests
+    val totalGain = situation.requests.par
       .map{ request =>
         import request._
         val endpoint = endpoints(endpointId)

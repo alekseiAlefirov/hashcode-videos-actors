@@ -1,13 +1,11 @@
 package gui
-import actors.ApplicationActor
-import akka.actor.{ActorSystem, Props}
-import actors.Messages.Application
 
 import scalafx.Includes.handle
 import scalafx.application.JFXApp
 import scalafx.scene.Scene
-import scalafx.scene.control.{Button, TextField}
+import scalafx.scene.control.{Button, Label, TextArea, TextField}
 import scalafx.scene.layout.HBox
+import scalafx.scene.layout.VBox
 
 
 class SolverStage(_title: String) extends JFXApp.PrimaryStage {
@@ -16,31 +14,23 @@ class SolverStage(_title: String) extends JFXApp.PrimaryStage {
   width = 600
   height = 450
 
-  var onPauseButtonClicked : Unit => Unit = { _ => () }
-  var onPopulationCountUBClicked : Int => Unit = { _ => () }
-  var onInvadeButtonClicked : Unit => Unit = {_ => () }
+  //var onPauseButtonClicked:        Unit => Unit = { _ => () }
 
-  val pauseButton = new Button("Pause"){
+  /*val pauseButton = new Button("Pause"){
     onMouseClicked = handle { onPauseButtonClicked() }
-  }
+  }*/
 
-  val populationCountBox = new TextField
-  val populationCountUpdateButton = new Button("Update"){
-    onMouseClicked = handle { onPopulationCountUBClicked( populationCountBox.text.value.toInt ) }
-  }
-
-  val invadeButton = new Button("Invade!"){
-    onMouseClicked = handle { onInvadeButtonClicked() }
+  val highscoreLabel = new Label("Aprx. highscore: ") {
+    def updateHighScore(value: Int) = {
+      this.text_=(s"Aprx. highscore: $value")
+    }
   }
 
   scene = new Scene {
     //fill = LightGreen
-    content = new HBox {
-      children = Seq(
-        pauseButton,
-        populationCountBox,
-        populationCountUpdateButton,
-        invadeButton
+    content = new VBox {
+      children = Seq (
+        highscoreLabel
       )
     }
   }

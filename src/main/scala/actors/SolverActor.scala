@@ -1,32 +1,45 @@
 package actors
 
-import actors.Messages.Application
-import actors.Messages.Application.{Invade, UpdatePopulationCount}
-import actors.Messages.Solver.Work
+import actors.Messages.Solver.{InfoUpdateOnTotalGain, Init}
+import akka.actor.SupervisorStrategy.{Escalate, Stop}
 import logic.Domain.Situation
 import akka.actor._
-import logic.Solver
+import logic.Context
+
+import scala.concurrent.duration._
 
 class SolverActor(situation: Situation) extends Actor {
 
-  val solver = new Solver(situation)
-  println(s"Population count: ${solver.populationN}")
+  val system = new System(Context(situation))
+
+  val systemActor = context.actorOf(SystemActor.props(system), "solver-system")
+
+  val endpointActors =
+    Array.tabulate(situation.endpoints.length){ endpointId =>
+      context.actorOf(EndpointActor.props(system, endpointId), s"endpoint-$endpointId")
+    }
+
+  val cacheServerActors =
+    Array.tabulate(situation.cacheServersN){ cacheServerId =>
+      context.actorOf(CacheServerActor.props(system, cacheServerId), s"cacheServer-$cacheServerId")
+    }
+
+  system.systemActor = systemActor
+  system.endpointActors = endpointActors
+  system.cacheServerActors = cacheServerActors
+
+  systemActor ! Init
+
+  override val supervisorStrategy =
+    OneForOneStrategy(maxNrOfRetries = 0, withinTimeRange = 1 minute, loggingEnabled = true) {
+      //TODO: DEAL WITH IT
+      case _: java.util.NoSuchElementException => Stop
+    }
 
   override def receive: Receive = {
-    case Work =>
-      val updated = solver.iterate()
-      if (updated) {
-        val bestSolution = Solver.scoredSolution2Solution(solver.bestSolution)
-        sender ! Messages.Solver.Iterated(Some(bestSolution, solver.bestSolution.score))
-      }
-      else {
-        sender ! Messages.Solver.Iterated(None)
-      }
 
-    case UpdatePopulationCount(count) =>
-      solver.changePopulationCount(count)
-
-    case Invade => solver.invade()
+    case (x @ InfoUpdateOnTotalGain(_)) => context.parent ! x
+    case x => println(s"UNEXPECTED MESSAGE: $x")
   }
 
 }
